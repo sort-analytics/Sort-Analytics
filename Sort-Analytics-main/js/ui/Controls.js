@@ -17,19 +17,13 @@ export class Controls {
   constructor(opts) {
     const {
       algorithms,
-      onAlgorithmChange, onAlgorithmBChange, onModeChange,
-      onSizeChange, onCaseChange, onSpeedChange,
+      onAlgorithmChange, onSizeChange, onCaseChange, onSpeedChange,
       onPlayToggle, onStep, onReset, onNewData, onSoundToggle,
     } = opts;
 
     this.algorithms = algorithms;
 
-    this.app        = document.querySelector('.app');
-    this.modeGroup  = document.getElementById('mode-group');
-    this.algoLabel  = document.getElementById('algo-label');
     this.select     = document.getElementById('algo-select');
-    this.selectB    = document.getElementById('algo-b-select');
-    this.mode       = 'single';
     this.desc       = document.getElementById('algo-desc');
     this.complexity = document.getElementById('algo-complexity');
     this.sizeRange  = document.getElementById('size-range');
@@ -42,10 +36,6 @@ export class Controls {
     this.btnNew     = document.getElementById('btn-new');
     this.btnSound   = document.getElementById('btn-sound');
 
-    this.btnInfo    = document.getElementById('btn-info');
-    this.dialog     = document.getElementById('ficha-dialog');
-    this.currentAlgorithm = algorithms[0];
-
     this.statIterations  = document.getElementById('stat-iterations');
     this.statComparisons = document.getElementById('stat-comparisons');
     this.statSwaps       = document.getElementById('stat-swaps');
@@ -54,8 +44,7 @@ export class Controls {
     this._buildAlgorithmSelect();
     this._buildSpeeds();
     this._bindEvents({
-      onAlgorithmChange, onAlgorithmBChange, onModeChange,
-      onSizeChange, onCaseChange, onSpeedChange,
+      onAlgorithmChange, onSizeChange, onCaseChange, onSpeedChange,
       onPlayToggle, onStep, onReset, onNewData, onSoundToggle,
     });
 
@@ -65,16 +54,12 @@ export class Controls {
   }
 
   _buildAlgorithmSelect() {
-    [this.select, this.selectB].forEach((sel) => {
-      this.algorithms.forEach((algo) => {
-        const opt = document.createElement('option');
-        opt.value = algo.id;
-        opt.textContent = algo.name;
-        sel.appendChild(opt);
-      });
+    this.algorithms.forEach((algo) => {
+      const opt = document.createElement('option');
+      opt.value = algo.id;
+      opt.textContent = algo.name;
+      this.select.appendChild(opt);
     });
-    // B arranca con un algoritmo distinto de A
-    if (this.algorithms[1]) this.selectB.value = this.algorithms[1].id;
   }
 
   _buildSpeeds() {
@@ -91,21 +76,7 @@ export class Controls {
     this.select.addEventListener('change', (e) => {
       const algo = this.algorithms.find((a) => a.id === e.target.value);
       this.updateAlgorithmMeta(algo);
-      this._syncDistinct();
       cb.onAlgorithmChange?.(algo);
-    });
-
-    this.selectB.addEventListener('change', (e) => {
-      const algo = this.algorithms.find((a) => a.id === e.target.value);
-      this._syncDistinct();
-      cb.onAlgorithmBChange?.(algo);
-    });
-
-    this.modeGroup.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-mode]');
-      if (!btn || btn.dataset.mode === this.mode) return;
-      this.setMode(btn.dataset.mode);
-      cb.onModeChange?.(btn.dataset.mode);
     });
 
     this.sizeRange.addEventListener('input', (e) => {
@@ -133,30 +104,6 @@ export class Controls {
     this.btnReset.addEventListener('click', () => cb.onReset?.());
     this.btnNew.addEventListener('click', () => cb.onNewData?.());
     this.btnSound.addEventListener('click', () => cb.onSoundToggle?.());
-
-    /* ── Ficha técnica (modal) ── */
-    this.btnInfo.addEventListener('click', () => this.openFicha());
-    this.dialog.querySelector('#ficha-close')
-      .addEventListener('click', () => this.dialog.close());
-    this.dialog.addEventListener('click', (e) => {
-      if (e.target === this.dialog) this.dialog.close();
-    });
-  }
-
-  /** Cambia entre 'single' y 'compare' (sólo UI; la lógica vive en main.js). */
-  setMode(mode) {
-    this.mode = mode;
-    this.app.classList.toggle('is-compare', mode === 'compare');
-    this.algoLabel.textContent = mode === 'compare' ? 'Algoritmo A' : 'Algoritmo';
-    this._activate(this.modeGroup, this.modeGroup.querySelector(`[data-mode="${mode}"]`));
-    this._syncDistinct();
-  }
-
-  /** En modo comparación no se puede elegir el mismo algoritmo en A y B. */
-  _syncDistinct() {
-    const compare = this.mode === 'compare';
-    for (const opt of this.select.options)  opt.disabled = compare && opt.value === this.selectB.value;
-    for (const opt of this.selectB.options) opt.disabled = compare && opt.value === this.select.value;
   }
 
   _activate(group, btn) {
@@ -165,7 +112,6 @@ export class Controls {
   }
 
   updateAlgorithmMeta(algo) {
-    this.currentAlgorithm = algo;
     this.desc.textContent = algo.description ?? '';
     this.complexity.innerHTML = '';
     const c = algo.complexity ?? {};
@@ -176,70 +122,6 @@ export class Controls {
       span.textContent = `${label}: ${c[key]}`;
       this.complexity.appendChild(span);
     });
-  }
-
-  /** Abre el modal con la ficha técnica del algoritmo actual. */
-  openFicha(algo = this.currentAlgorithm) {
-    if (!algo) return;
-    const f = algo.ficha || {};
-    const c = algo.complexity || {};
-
-    this.dialog.querySelector('#ficha-name').textContent    = algo.name;
-    this.dialog.querySelector('#ficha-tagline').textContent = algo.description ?? '';
-    this.dialog.querySelector('#ficha-idea').textContent    = f.idea ?? '—';
-
-    /* Pasos */
-    const pasosEl = this.dialog.querySelector('#ficha-pasos');
-    pasosEl.innerHTML = '';
-    (f.pasos ?? []).forEach((txt) => {
-      const li = document.createElement('li');
-      li.textContent = txt;
-      pasosEl.appendChild(li);
-    });
-
-    /* Chips de complejidad (toma valores de algo.complexity) */
-    const chipsEl = this.dialog.querySelector('#ficha-complejidad');
-    chipsEl.innerHTML = '';
-    [['best', 'Mejor', c.best],
-     ['average', 'Promedio', c.average],
-     ['worst', 'Peor', c.worst],
-     ['space', 'Espacio', c.space]].forEach(([cls, label, value]) => {
-      if (!value) return;
-      const chip = document.createElement('div');
-      chip.className = `ficha-chip ${cls}`;
-      chip.innerHTML = `<span class="label">${label}</span><span class="value"></span>`;
-      chip.querySelector('.value').textContent = value;
-      chipsEl.appendChild(chip);
-    });
-
-    /* Justificaciones por caso */
-    const j = f.justificacion || {};
-    const justEl = this.dialog.querySelector('#ficha-justificacion');
-    justEl.innerHTML = '';
-    [['best', 'Mejor caso', j.mejor],
-     ['average', 'Caso promedio', j.promedio],
-     ['worst', 'Peor caso', j.peor]].forEach(([cls, label, txt]) => {
-      if (!txt) return;
-      const div = document.createElement('div');
-      div.className = `ficha-justif ${cls}`;
-      const strong = document.createElement('strong');
-      strong.textContent = label;
-      const span = document.createElement('span');
-      span.textContent = txt;
-      div.append(strong, span);
-      justEl.appendChild(div);
-    });
-
-    /* Notas (opcional) */
-    const wrap = this.dialog.querySelector('#ficha-notas-wrap');
-    if (f.notas) {
-      wrap.style.display = '';
-      this.dialog.querySelector('#ficha-notas').textContent = f.notas;
-    } else {
-      wrap.style.display = 'none';
-    }
-
-    this.dialog.showModal();
   }
 
   /** Recibe { iterations, comparisons, swaps, sorted, total }. */
@@ -279,5 +161,4 @@ export class Controls {
   }
 
   getSize() { return Number(this.sizeRange.value); }
-  getAlgorithmBId() { return this.selectB.value; }
 }

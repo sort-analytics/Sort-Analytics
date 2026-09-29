@@ -5,7 +5,6 @@
  *    1. Crear el archivo en /js/algorithms/miAlgoritmo.js
  *    2. Importarlo acá
  *    3. Agregarlo al array `algorithms`
- *    4. Añadir su ficha técnica en ./fichas.js
  *  Nada más. La UI se construye automáticamente desde este registro.
  * ─────────────────────────────────────────────────────────────
  */
@@ -18,7 +17,6 @@ import { heapSort }      from './heap.js';
 import { exchangeSort }  from './exchange.js';
 import { gnomeSort }     from './gnome.js';
 import { stoogeSort }    from './stooge.js';
-import { fichas }        from './fichas.js';
 
 export const algorithms = [
   bubbleSort,
@@ -31,11 +29,6 @@ export const algorithms = [
   gnomeSort,
   stoogeSort,
 ];
-
-/* Inyecta la ficha técnica por id, sin tocar cada archivo de algoritmo. */
-for (const a of algorithms) {
-  if (fichas[a.id]) a.ficha = fichas[a.id];
-}
 
 const byId = new Map(algorithms.map((a) => [a.id, a]));
 

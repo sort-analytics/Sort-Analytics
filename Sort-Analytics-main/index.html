@@ -17,10 +17,7 @@
       <section class="group">
         <label class="group-title">Algoritmo</label>
         <select id="algo-select" class="select"></select>
-        <div class="desc-row">
-          <p id="algo-desc" class="desc"></p>
-          <button id="btn-info" class="btn-info" title="Ver ficha técnica" aria-label="Ver ficha técnica">i</button>
-        </div>
+        <p id="algo-desc" class="desc"></p>
         <div id="algo-complexity" class="complexity"></div>
       </section>
 
@@ -92,38 +89,6 @@
       <div id="complexity-chart" class="complexity-chart"></div>
     </main>
   </div>
-
-  <dialog id="ficha-dialog" class="ficha-dialog">
-    <header class="ficha-header">
-      <div>
-        <h2 id="ficha-name"></h2>
-        <p id="ficha-tagline" class="ficha-tagline"></p>
-      </div>
-      <button id="ficha-close" class="ficha-close" aria-label="Cerrar">✕</button>
-    </header>
-    <div class="ficha-body">
-      <section class="ficha-section">
-        <h3>Idea central</h3>
-        <p id="ficha-idea"></p>
-      </section>
-      <section class="ficha-section">
-        <h3>Pasos del algoritmo</h3>
-        <ol id="ficha-pasos"></ol>
-      </section>
-      <section class="ficha-section">
-        <h3>Complejidad</h3>
-        <div id="ficha-complejidad" class="ficha-complejidad"></div>
-      </section>
-      <section class="ficha-section">
-        <h3>Justificación</h3>
-        <div id="ficha-justificacion" class="ficha-justificacion"></div>
-      </section>
-      <section class="ficha-section" id="ficha-notas-wrap">
-        <h3>Notas de implementación</h3>
-        <p id="ficha-notas"></p>
-      </section>
-    </div>
-  </dialog>
 
   <script type="module" src="js/main.js"></script>
 </body>
